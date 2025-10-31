@@ -28,9 +28,12 @@ Hierarchical (Multi-Level) Paging
 To solve the memory overhead problem, modern systems use **hierarchical paging** -- breaking the page table into smaller, manageable parts that can be loaded on demand.
 ### Example (Typical 2-level paging for 32-bit systems):
 * The virtual address is split into parts:
-  +--------------+--------------+-----------------+
-  | Dir(10-bits) | Tbl(10-bits) | Offset(12-bits) |
-  +--------------+--------------+-----------------+
+  | Field | Bits | Description |
+|:------|:----:|:-------------|
+| Dir   | 10   | Page Directory Index |
+| Tbl   | 10   | Page Table Index |
+| Offset| 12   | Offset within Page |
+
 * **Page Directory (Dir)** points to the **Page Tables (Tbl)**, each mapping $1,204$ pages.
 * Only the portions of the table that are needed are kept in memory.
 
