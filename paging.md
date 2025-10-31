@@ -14,7 +14,7 @@ This translation is done by the **MMU (Memory Management Unit)** using **page ta
 In **flat paging**, the system uses a **single page table** to map virtual pages directly to physical frames.
 ### Example
 If a system uses 4 KB pages and 32-bit wide virtual addresses:
-* There are 2^32/2^12 = 2^20 = 1,048,576 virtual pages.
+* There are 2^32^/2^12^ = 2^20^ = 1,048,576 virtual pages.
 * Each entry in the page table holds the physical frame number (and flags like valid, dirty, accessed).
 ### Problem
 A single page table for each process becomes huge:
