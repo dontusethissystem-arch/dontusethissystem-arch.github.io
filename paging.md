@@ -22,3 +22,32 @@ A single page table for each process becomes huge:
 * for 100 processes → **400 MB** just for page tables!
 Thus, flat paging doesn't scale well as address spaces and processes counts grow
 
+
+Hierarchical (Multi-Level) Paging
+
+To solve the memory overhead problem, modern systems use **hierarchical paging** -- breaking the page table into smaller, manageable parts that can be loaded on demand.
+### Example (Typical 2-level paging for 32-bit systems):
+* The virtual address is split into parts:
+  +--------------+--------------+-----------------+
+  | Dir(10-bits) | Tbl(10-bits) | Offset(12-bits) |
+  +--------------+--------------+-----------------+
+* **Page Directory (Dir)** points to the **Page Tables (Tbl)**, each mapping $1,204$ pages.
+* Only the portions of the table that are needed are kept in memory.
+
+### Advantages:
+* Saves memory -- page table are created only when needed.
+* Easier to manage large address spaces.
+* Supports demand paging and hierarchical caching (TLBs).
+
+### Disadvantages:
+* More lookups per process -- increases translation time.
+* Needs hardware support (MMU + TLB caching).
+
+# Real-world Example: x86-64 (4-level paging)
+Modern 64-bit CPUs (like Intel and AMD) use **$4$** or **$5$ levels** of paging (typically 48-bit VA).
++-------+------+----+----+----------------+
+| PML 4 | PDPT | PD | PT | Offset(12-bit) |
++-------+------+----+----+----------------+
+* Each level indexes 9 bits of the virtual address.
+* Translation can take multiple memory accesses -- but is heavily optimized by the **TLB (Translation Lookaside Buffer)** 
+
