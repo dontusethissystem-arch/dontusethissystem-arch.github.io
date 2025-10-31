@@ -27,8 +27,8 @@ Hierarchical (Multi-Level) Paging
 
 To solve the memory overhead problem, modern systems use **hierarchical paging** -- breaking the page table into smaller, manageable parts that can be loaded on demand.
 ### Example (Typical 2-level paging for 32-bit systems):
-* The virtual address is split into parts:
-  | Field | Bits | Description |
+The virtual address is split into parts:
+| Field | Bits | Description |
 |------|----|-------------|
 | Dir   | 10   | Page Directory Index |
 | Tbl   | 10   | Page Table Index |
