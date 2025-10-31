@@ -1,3 +1,8 @@
+---
+title: "Understanding Paging: Flat vs. Hierarchical"
+author: "Your Name"
+date: "2025-10-30"
+---
 # Understanding Paging: Flat vs. Hierarchical Paging
 > A simple explanation for students, system programmers and curious engineers.
 ---
