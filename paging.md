@@ -48,9 +48,9 @@ To solve the memory overhead problem, modern systems use **hierarchical paging**
 
 # Real-world Example: x86-64 (4-level paging)
 Modern 64-bit CPUs (like Intel and AMD) use **$4$** or **$5$ levels** of paging (typically 48-bit VA).
-+-------+-------+-------+-------+----------------+
-| PML4 | PDPT | PD | PT | Offset (12-bit)|
-+-------+-------+-------+-------+----------------+
+| PML4 | PDPT | PD | PT | Offset |
+|------|-------|-------|-------|------|
+|9 bits| 9 bits | 9 bits | 9 bits | 12 bits|
 * Each level indexes 9 bits of the virtual address.
 * Translation can take multiple memory accesses -- but is heavily optimized by the **TLB (Translation Lookaside Buffer)**.
 ---
