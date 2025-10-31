@@ -18,7 +18,7 @@ If a system uses 4 KB pages and 32-bit wide virtual addresses:
 * Each entry in the page table holds the physical frame number (and flags like valid, dirty, accessed).
 ### Problem
 A single page table for each process becomes huge:
-* 1,048,576 entries × 4 bytes per entry = **4 MB** per **process*.
+* 1,048,576 entries × 4 bytes per entry = **4 MB** per **process**.
 * for 100 processes → **400 MB** just for page tables!
 Thus, flat paging doesn't scale well as address spaces and processes counts grow
 
