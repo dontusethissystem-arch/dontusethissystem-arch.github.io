@@ -1,26 +1,11 @@
 <!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="generator" content="pandoc" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Understanding Paging: Flat vs. Hierarchical</title>
+  <link rel="stylesheet" href="https://cdn.simplecss.org/simple.css" />
   <style>
-    code{white-space: pre-wrap;}
-    span.smallcaps{font-variant: small-caps;}
-    div.columns{display: flex; gap: min(4vw, 1.5em);}
-    div.column{flex: auto; overflow-x: auto;}
-    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
-    /* The extra [class] is a hack that increases specificity enough to
-       override a similar rule in reveal.js */
-    ul.task-list[class]{list-style: none;}
-    ul.task-list li input[type="checkbox"] {
-      font-size: inherit;
-      width: 0.8em;
-      margin: 0 0.8em 0.2em -1.6em;
-      vertical-align: middle;
-    }
-    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
     body {
       max-width: 900px;
       margin: 2rem auto;
@@ -29,6 +14,10 @@
     }
     header, footer {
       text-align: center;
+      margin-bottom: 2rem;
+    }
+    section {
+      margin-bottom: 2.5rem;
     }
     pre, code {
       background: #f5f5f5;
@@ -38,8 +27,8 @@
     }
     table {
       border-collapse: collapse;
-      margin: 1em 0;
       width: 100%;
+      margin: 1em 0;
     }
     th, td {
       border: 1px solid #ccc;
@@ -48,7 +37,6 @@
     }
     blockquote {
       border-left: 4px solid #555;
-      margin: 1em 0;
       padding-left: 1em;
       color: #333;
       background: #f8f8f8;
@@ -63,131 +51,124 @@
       border-radius: 6px;
     }
   </style>
-  <link rel="stylesheet" href="https://cdn.simplecss.org/simple.css" />
 </head>
 <body>
-<header id="title-block-header">
-<h1 class="title">Understanding Paging: Flat vs. Hierarchical</h1>
-</header>
-<h1 id="understanding-paging-flat-vs.-hierarchical-paging">Understanding
-Paging: Flat vs. Hierarchical Paging</h1>
-<h2
-id="a-simple-explanation-for-students-system-programmers-and-curious-engineers.">&gt;
-A simple explanation for students, system programmers and curious
-engineers.</h2>
-<h2 id="what-is-paging">What is Paging?</h2>
-<p>Paging is a <em>memory management technique</em> that breaks physical
-and virtual memory into fixed-size blocks called pages. It allow an
-operating system to: - Use memory more efficiently, - Avoid external
-fragmentation, - Isolate process in their own address spaces. Each
-process uses <strong>virtual addresses</strong>, which must be
-translated into physical addresses before accessing RAM. This
-translation is done by the <strong>MMU (Memory Management Unit)</strong>
-using <strong>page tables</strong>. — ## Flat (Single-Level) Paging In
-<strong>flat paging</strong>, the system uses a <strong>single page
-table</strong> to map virtual pages directly to physical frames. ###
-Example If a system uses 4 KB pages and 32-bit wide virtual addresses: -
-There are <span class="math inline">2<sup>32</sup>/2<sup>12</sup></span>
-= <span class="math inline">2<sup>20</sup></span> = 1,048,576 virtual
-pages. - Each entry in the page table holds the physical frame number
-(and flags like valid, dirty, accessed). ### Problem A single page table
-for each process becomes huge: - 1,048,576 entries × 4 bytes per entry =
-<strong>4 MB</strong> per <strong>process</strong>. - for 100 processes
-→ <strong>400 MB</strong> just for page tables! Thus, flat paging
-doesn’t scale well as address spaces and processes counts grow —</p>
-<p>Hierarchical (Multi-Level) Paging</p>
-<p>To solve the memory overhead problem, modern systems use
-<strong>hierarchical paging</strong> – breaking the page table into
-smaller, manageable parts that can be loaded on demand. ### Example
-(Typical 2-level paging for 32-bit systems): The virtual address is
-split into parts: | Field | Bits | Description | |——|—-|————-| | Dir |
-10 | Page Directory Index | | Tbl | 10 | Page Table Index | | Offset| 12
-| Offset within Page |</p>
-<ul>
-<li><strong>Page Directory (Dir)</strong> points to the <strong>Page
-Tables (Tbl)</strong>, each mapping <span
-class="math inline">1, 204</span> pages.</li>
-<li>Only the portions of the table that are needed are kept in
-memory.</li>
-</ul>
-<h3 id="advantages">Advantages:</h3>
-<ul>
-<li>Saves memory — page table are created only when needed.</li>
-<li>Easier to manage large address spaces.</li>
-<li>Supports demand paging and hierarchical caching (TLBs).</li>
-</ul>
-<h3 id="disadvantages">Disadvantages:</h3>
-<ul>
-<li>More lookups per process — increases translation time.</li>
-<li>Needs hardware support (MMU + TLB caching).</li>
-</ul>
-<h1 id="real-world-example-x86-64-4-level-paging">Real-world Example:
-x86-64 (4-level paging)</h1>
-<p>Modern 64-bit CPUs (like Intel and AMD) use <strong><span
-class="math inline">4</span></strong> or <strong><span
-class="math inline">5</span> levels</strong> of paging (typically 48-bit
-VA). | PML4 | PDPT | PD | PT | Offset | |——|——-|——-|——-|——| |9 bits| 9
-bits | 9 bits | 9 bits | 12 bits| * Each level indexes 9 bits of the
-virtual address. * Translation can take multiple memory accesses – but
-is heavily optimized by the <strong>TLB (Translation Lookaside
-Buffer)</strong>. — ## 🧭 Summary</p>
-<table>
-<colgroup>
-<col style="width: 22%" />
-<col style="width: 31%" />
-<col style="width: 45%" />
-</colgroup>
-<thead>
-<tr class="header">
-<th>Feature</th>
-<th>Flat Paging</th>
-<th>Hierarchical Paging</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td><strong>Structure</strong></td>
-<td>One big page table</td>
-<td>Multi-level tables</td>
-</tr>
-<tr class="even">
-<td><strong>Memory Use</strong></td>
-<td>Very high</td>
-<td>Much lower</td>
-</tr>
-<tr class="odd">
-<td><strong>Address Translation</strong></td>
-<td>Single lookup</td>
-<td>Multi-step (2–5 levels)</td>
-</tr>
-<tr class="even">
-<td><strong>Performance</strong></td>
-<td>Fast (in theory)</td>
-<td>Slower per access, but TLB-cached</td>
-</tr>
-<tr class="odd">
-<td><strong>Used In</strong></td>
-<td>Small/simple systems</td>
-<td>Modern CPUs (x86, ARM, RISC-V)</td>
-</tr>
-</tbody>
-</table>
-<hr />
-<blockquote>
-<p><strong>Key Takeaway:</strong><br />
-Flat paging is conceptually simple but memory-hungry.<br />
-Hierarchical paging is more complex but scalable — it’s the foundation
-of all modern virtual memory systems.</p>
-</blockquote>
-<h3 id="further-reading">Further Reading</h3>
-<ul>
-<li><em>Operating Systems: Three Easy Pieces</em> — Chapter on Virtual
-Memory<br />
-</li>
-<li>Intel® SDM Vol. 3A, Chapter 4 (Paging)<br />
-</li>
-<li><a href="https://wiki.osdev.org/Paging">Paging on x86_64 — OSDev
-Wiki</a></li>
-</ul>
+  <header>
+    <h1>Understanding Paging: Flat vs. Hierarchical Paging</h1>
+    <p><em>A simple explanation for students, system programmers, and curious engineers.</em></p>
+  </header>
+
+  <section id="what-is-paging">
+    <h2>🧩 What is Paging?</h2>
+    <p>Paging is a <em>memory management technique</em> that breaks physical and virtual memory into fixed-size blocks called <strong>pages</strong>. It allows an operating system to:</p>
+    <ul>
+      <li>Use memory more efficiently,</li>
+      <li>Avoid external fragmentation,</li>
+      <li>Isolate processes in their own address spaces.</li>
+    </ul>
+    <p>Each process uses <strong>virtual addresses</strong>, which must be translated into physical addresses before accessing RAM. This translation is done by the <strong>MMU (Memory Management Unit)</strong> using <strong>page tables</strong>.</p>
+  </section>
+
+  <section id="flat-paging">
+    <h2>📘 Flat (Single-Level) Paging</h2>
+    <p>In <strong>flat paging</strong>, the system uses a <strong>single page table</strong> to map virtual pages directly to physical frames.</p>
+    <h3>Example</h3>
+    <ul>
+      <li>If a system uses 4 KB pages and 32-bit virtual addresses:</li>
+      <li>There are \(2^{32}/2^{12} = 2^{20} = 1,048,576\) virtual pages.</li>
+      <li>Each entry holds the physical frame number and flags (valid, dirty, accessed).</li>
+    </ul>
+    <h3>Problem</h3>
+    <ul>
+      <li>1,048,576 entries × 4 bytes = <strong>4 MB per process</strong>.</li>
+      <li>For 100 processes → <strong>400 MB</strong> only for page tables!</li>
+    </ul>
+    <blockquote>Flat paging doesn’t scale well as address spaces and process counts grow.</blockquote>
+  </section>
+
+  <section id="hierarchical-paging">
+    <h2>🏗️ Hierarchical (Multi-Level) Paging</h2>
+    <p>To solve the memory overhead problem, modern systems use <strong>hierarchical paging</strong> — breaking the page table into smaller parts that can be loaded on demand.</p>
+
+    <h3>Example: 2-Level Paging (32-bit System)</h3>
+    <table>
+      <thead>
+        <tr><th>Field</th><th>Bits</th><th>Description</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Dir</td><td>10</td><td>Page Directory Index</td></tr>
+        <tr><td>Tbl</td><td>10</td><td>Page Table Index</td></tr>
+        <tr><td>Offset</td><td>12</td><td>Offset within Page</td></tr>
+      </tbody>
+    </table>
+
+    <ul>
+      <li><strong>Page Directory (Dir)</strong> points to <strong>Page Tables (Tbl)</strong>.</li>
+      <li>Only necessary parts of the table stay in memory.</li>
+    </ul>
+
+    <h3>Advantages</h3>
+    <ul>
+      <li>Saves memory — page tables created only when needed.</li>
+      <li>Easier to manage large address spaces.</li>
+      <li>Supports demand paging and TLB caching.</li>
+    </ul>
+
+    <h3>Disadvantages</h3>
+    <ul>
+      <li>More lookups — increases translation time.</li>
+      <li>Requires MMU and TLB support.</li>
+    </ul>
+  </section>
+
+  <section id="x86-example">
+    <h2>🖥️ Real-World Example: x86-64 (4-Level Paging)</h2>
+    <p>Modern 64-bit CPUs (Intel, AMD) use 4 or 5 levels of paging, typically for 48-bit virtual addresses.</p>
+    <table>
+      <thead>
+        <tr><th>PML4</th><th>PDPT</th><th>PD</th><th>PT</th><th>Offset</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>9 bits</td><td>9 bits</td><td>9 bits</td><td>9 bits</td><td>12 bits</td></tr>
+      </tbody>
+    </table>
+    <p>Each level indexes 9 bits of the virtual address. Although translation takes multiple memory accesses, the <strong>TLB (Translation Lookaside Buffer)</strong> caches these mappings efficiently.</p>
+  </section>
+
+  <section id="summary">
+    <h2>🧭 Summary</h2>
+    <table>
+      <thead>
+        <tr><th>Feature</th><th>Flat Paging</th><th>Hierarchical Paging</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Structure</td><td>Single table</td><td>Multi-level tables</td></tr>
+        <tr><td>Memory Use</td><td>High</td><td>Low</td></tr>
+        <tr><td>Translation</td><td>Single lookup</td><td>2–5 lookups</td></tr>
+        <tr><td>Performance</td><td>Fast (simple)</td><td>Slower per access, TLB optimized</td></tr>
+        <tr><td>Used In</td><td>Small systems</td><td>Modern CPUs</td></tr>
+      </tbody>
+    </table>
+
+    <blockquote>
+      <strong>Key Takeaway:</strong><br>
+      Flat paging is simple but memory-hungry.<br>
+      Hierarchical paging is complex but scalable — the foundation of modern virtual memory.
+    </blockquote>
+  </section>
+
+  <section id="further-reading">
+    <h3>📚 Further Reading</h3>
+    <ul>
+      <li><em>Operating Systems: Three Easy Pieces</em> — Virtual Memory chapter</li>
+      <li>Intel® SDM Vol. 3A, Chapter 4 (Paging)</li>
+      <li><a href="https://wiki.osdev.org/Paging" target="_blank">Paging on x86_64 — OSDev Wiki</a></li>
+    </ul>
+  </section>
+
+  <p><a class="back-home" href="index.html">← Back to Home</a></p>
+  <footer>
+    <p>© 2025 Your Name — Published on <a href="https://github.com/yourusername/yourusername.github.io">GitHub Pages</a></p>
+  </footer>
 </body>
 </html>
