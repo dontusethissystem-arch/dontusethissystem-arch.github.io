@@ -1,13 +1,13 @@
 ---
 title: "Understanding Paging: Flat vs. Hierarchical"
-author: "Your Name"
+author: "Malinga RK"
 date: "2025-10-30"
 ---
 # Understanding Paging: Flat vs. Hierarchical Paging
 > A simple explanation for students, system programmers and curious engineers.
 ---
 ## What is Paging?
-Paging is a *memory management technique* that breaks physical and virtual memory into fixed-size blocks called pages.
+Paging is a **memory management technique** that breaks physical and virtual memory into fixed-size blocks called pages.
 It allow an operating system to:
 - Use memory more efficiently,
 - Avoid external fragmentation,
