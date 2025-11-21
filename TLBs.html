@@ -1,0 +1,706 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>I-TLB and D-TLB: The Dual Gatekeepers | Weekly Chronicle</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Source+Serif+Pro:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --cream: #FDF6E3;
+      --paper: #FAF4E8;
+      --ink: #2C2416;
+      --ink-light: #5C4D3C;
+      --accent: #8B4513;
+      --accent-light: #D4A574;
+      --rule: #C4B69C;
+      --highlight: #FFF8DC;
+    }
+    
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: 'Source Serif Pro', Georgia, serif;
+      background: var(--cream);
+      color: var(--ink);
+      line-height: 1.7;
+      font-size: 17px;
+    }
+    
+    .newspaper {
+      max-width: 1000px;
+      margin: 0 auto;
+      background: var(--paper);
+      min-height: 100vh;
+      box-shadow: 0 0 50px rgba(0,0,0,0.1);
+    }
+    
+    /* Header */
+    .header {
+      text-align: center;
+      padding: 30px 40px 20px;
+      border-bottom: 3px double var(--ink);
+    }
+    
+    .edition {
+      font-size: 11px;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: var(--ink-light);
+      margin-bottom: 10px;
+    }
+    
+    .masthead {
+      font-family: 'Playfair Display', serif;
+      font-size: 52px;
+      font-weight: 700;
+      letter-spacing: -1px;
+      margin-bottom: 5px;
+      background: linear-gradient(180deg, var(--ink) 0%, var(--ink-light) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    
+    .tagline {
+      font-style: italic;
+      color: var(--ink-light);
+      font-size: 14px;
+      margin-bottom: 15px;
+    }
+    
+    .header-rule {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 20px;
+      font-size: 12px;
+      color: var(--ink-light);
+    }
+    
+    .header-rule span {
+      letter-spacing: 2px;
+      text-transform: uppercase;
+    }
+    
+    .ornament {
+      font-size: 16px;
+    }
+    
+    /* Navigation */
+    .nav {
+      display: flex;
+      justify-content: center;
+      gap: 30px;
+      padding: 12px;
+      border-bottom: 1px solid var(--rule);
+      background: var(--highlight);
+      font-size: 12px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+    
+    .nav a {
+      color: var(--ink-light);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+    
+    .nav a:hover {
+      color: var(--accent);
+    }
+    
+    .nav a.active {
+      color: var(--accent);
+      font-weight: 600;
+    }
+    
+    /* Main Content */
+    .content {
+      padding: 40px;
+    }
+    
+    /* Article Header */
+    .article-header {
+      text-align: center;
+      margin-bottom: 40px;
+      padding-bottom: 30px;
+      border-bottom: 1px solid var(--rule);
+    }
+    
+    .category {
+      display: inline-block;
+      background: var(--accent);
+      color: var(--paper);
+      padding: 4px 15px;
+      font-size: 10px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      margin-bottom: 20px;
+    }
+    
+    .headline {
+      font-family: 'Playfair Display', serif;
+      font-size: 42px;
+      font-weight: 700;
+      line-height: 1.2;
+      margin-bottom: 15px;
+    }
+    
+    .subheadline {
+      font-size: 20px;
+      color: var(--ink-light);
+      font-style: italic;
+      max-width: 600px;
+      margin: 0 auto 20px;
+    }
+    
+    .byline {
+      font-size: 13px;
+      color: var(--ink-light);
+      letter-spacing: 1px;
+    }
+    
+    .byline strong {
+      color: var(--ink);
+    }
+    
+    /* Article Body */
+    .article-body {
+      column-count: 2;
+      column-gap: 40px;
+      column-rule: 1px solid var(--rule);
+    }
+    
+    .article-body p {
+      margin-bottom: 1.2em;
+      text-align: justify;
+      hyphens: auto;
+    }
+    
+    .article-body p:first-of-type::first-letter {
+      font-family: 'Playfair Display', serif;
+      font-size: 65px;
+      float: left;
+      line-height: 0.8;
+      padding-right: 10px;
+      padding-top: 5px;
+      color: var(--accent);
+    }
+    
+    /* Section Headers */
+    .section-header {
+      column-span: all;
+      font-family: 'Playfair Display', serif;
+      font-size: 24px;
+      font-weight: 600;
+      margin: 35px 0 20px;
+      padding-bottom: 10px;
+      border-bottom: 2px solid var(--accent);
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+    
+    .section-header::before {
+      content: "§";
+      color: var(--accent);
+      font-size: 28px;
+    }
+    
+    /* Code and Technical Blocks */
+    .code-block {
+      column-span: all;
+      background: var(--ink);
+      color: #E8DFC8;
+      padding: 25px;
+      margin: 25px 0;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      line-height: 1.6;
+      border-left: 4px solid var(--accent);
+      overflow-x: auto;
+      white-space: pre;
+    }
+    
+    .diagram {
+      column-span: all;
+      background: linear-gradient(135deg, var(--highlight) 0%, var(--paper) 100%);
+      border: 2px solid var(--rule);
+      padding: 25px;
+      margin: 25px 0;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      line-height: 1.5;
+      overflow-x: auto;
+      white-space: pre;
+      text-align: center;
+    }
+    
+    /* Highlight Box */
+    .highlight-box {
+      column-span: all;
+      background: var(--highlight);
+      border: 1px solid var(--accent-light);
+      border-left: 4px solid var(--accent);
+      padding: 25px 30px;
+      margin: 25px 0;
+      font-style: italic;
+    }
+    
+    .highlight-box p {
+      margin: 0;
+      text-align: left;
+    }
+    
+    /* Tables */
+    .table-container {
+      column-span: all;
+      margin: 25px 0;
+      overflow-x: auto;
+    }
+    
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+    
+    th {
+      background: var(--ink);
+      color: var(--paper);
+      padding: 12px 15px;
+      text-align: left;
+      font-family: 'Playfair Display', serif;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+    }
+    
+    td {
+      padding: 12px 15px;
+      border-bottom: 1px solid var(--rule);
+    }
+    
+    tr:nth-child(even) {
+      background: var(--highlight);
+    }
+    
+    /* Info Cards */
+    .info-grid {
+      column-span: all;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+      margin: 25px 0;
+    }
+    
+    .info-card {
+      background: var(--paper);
+      border: 1px solid var(--rule);
+      padding: 20px;
+      text-align: center;
+    }
+    
+    .info-card h4 {
+      font-family: 'Playfair Display', serif;
+      font-size: 16px;
+      color: var(--accent);
+      margin-bottom: 10px;
+    }
+    
+    .info-card p {
+      font-size: 14px;
+      margin: 0;
+      text-align: center;
+    }
+    
+    /* Pull Quote */
+    .pull-quote {
+      column-span: all;
+      text-align: center;
+      padding: 30px 50px;
+      margin: 30px 0;
+      border-top: 2px solid var(--accent);
+      border-bottom: 2px solid var(--accent);
+    }
+    
+    .pull-quote p {
+      font-family: 'Playfair Display', serif;
+      font-size: 24px;
+      font-style: italic;
+      color: var(--ink-light);
+      margin: 0;
+      text-align: center;
+    }
+    
+    /* Footer */
+    .footer {
+      text-align: center;
+      padding: 30px;
+      border-top: 3px double var(--ink);
+      background: var(--highlight);
+    }
+    
+    .footer-nav {
+      display: flex;
+      justify-content: center;
+      gap: 25px;
+      margin-bottom: 15px;
+    }
+    
+    .footer-nav a {
+      color: var(--ink-light);
+      text-decoration: none;
+      font-size: 12px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+    
+    .copyright {
+      font-size: 12px;
+      color: var(--ink-light);
+    }
+    
+    /* Inline Code */
+    code {
+      font-family: 'JetBrains Mono', monospace;
+      background: var(--highlight);
+      padding: 2px 6px;
+      font-size: 0.9em;
+      border: 1px solid var(--rule);
+    }
+    
+    /* Responsive */
+    @media (max-width: 800px) {
+      .article-body {
+        column-count: 1;
+      }
+      
+      .masthead {
+        font-size: 36px;
+      }
+      
+      .headline {
+        font-size: 32px;
+      }
+      
+      .info-grid {
+        grid-template-columns: 1fr;
+      }
+      
+      .content {
+        padding: 25px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="newspaper">
+    <header class="header">
+      <div class="edition">Vol. XLII • No. 23 • Systems Architecture Edition</div>
+      <h1 class="masthead">The Weekly Chronicle</h1>
+      <p class="tagline">"Illuminating the depths of computer architecture since the dawn of silicon"</p>
+      <div class="header-rule">
+        <span>November 2025</span>
+        <span class="ornament">❧</span>
+        <span>Memory Systems Special</span>
+        <span class="ornament">❧</span>
+        <span>Price: Free Knowledge</span>
+      </div>
+    </header>
+    
+    <nav class="nav">
+      <a href="#">Home</a>
+      <a href="#">Paging</a>
+      <a href="#" class="active">TLB Architecture</a>
+      <a href="#">Cache Systems</a>
+      <a href="#">Security</a>
+      <a href="#">Archives</a>
+    </nav>
+    
+    <main class="content">
+      <article>
+        <div class="article-header">
+          <span class="category">Memory Architecture</span>
+          <h1 class="headline">I-TLB and D-TLB: The Dual Gatekeepers of Memory Translation</h1>
+          <p class="subheadline">How modern processors solved the address translation bottleneck through architectural specialization</p>
+          <p class="byline">By <strong>Systems Architecture Desk</strong> • Continuing our Paging Series</p>
+        </div>
+        
+        <div class="article-body">
+          <p>In our previous exploration of paging, we established how virtual memory creates the illusion of a vast, contiguous address space for each process. But there's a critical performance challenge lurking beneath this elegant abstraction: every single memory access requires address translation. Enter the Translation Lookaside Buffer—and more specifically, its split architecture: the Instruction TLB (I-TLB) and Data TLB (D-TLB).</p>
+          
+          <h2 class="section-header">The Translation Problem</h2>
+          
+          <p>Consider what happens during a simple instruction like <code>MOV EAX, [0x4000]</code>. First, the CPU must fetch the instruction itself from a virtual address. Then, it must access the data at address 0x4000—another virtual address. Each of these operations would require walking through the page table hierarchy—potentially 4 or 5 memory accesses just to translate one address.</p>
+          
+          <p>Without optimization, a single instruction could trigger 8-10 memory accesses for translation alone. The mathematics is devastating: if each memory access takes 100 cycles, a simple data load could cost nearly 1,000 cycles before useful work begins. This is where the TLB becomes not merely useful, but absolutely essential.</p>
+          
+          <div class="diagram">┌─────────────────────────────────────────────────────────────┐
+│                    TLB Lookup Process                       │
+├─────────────────────────────────────────────────────────────┤
+│                                                             │
+│   Virtual Address ──┬──► [TLB] ──► Hit? ──► Physical Addr   │
+│                     │              │                        │
+│                     │              ▼                        │
+│                     │            Miss?                      │
+│                     │              │                        │
+│                     │              ▼                        │
+│                     └────► [Page Table Walk] ──► Fill TLB   │
+│                                                             │
+└─────────────────────────────────────────────────────────────┘</div>
+          
+          <p>A TLB hit returns the physical address in just 1-2 cycles. A TLB miss, however, triggers a full page table walk costing 10-100+ cycles. The performance of the entire memory subsystem hinges on maximizing TLB hit rates.</p>
+          
+          <h2 class="section-header">Why Split into I-TLB and D-TLB?</h2>
+          
+          <div class="highlight-box">
+            <p>Virtual address to physical address translation is a fundamental, universal concept in modern computer architecture. However, the specific implementation of using separate Instruction and Data TLBs (I-TLB and D-TLB) is an architectural optimization chosen for high-performance processors to enable parallel instruction and data access and to optimize for their different locality patterns. While not theoretically mandatory, it is a standard feature in most modern CPUs.</p>
+          </div>
+          
+          <p>The decision to split the TLB into instruction and data components wasn't arbitrary—it emerged from deep understanding of how processors actually execute code. Modern CPUs are superscalar: they fetch instructions while simultaneously executing others that access data. A unified TLB would create an unacceptable bottleneck.</p>
+          
+          <div class="info-grid">
+            <div class="info-card">
+              <h4>Parallel Access</h4>
+              <p>Fetch and execute units operate simultaneously, requiring independent translation paths</p>
+            </div>
+            <div class="info-card">
+              <h4>Different Patterns</h4>
+              <p>Instructions show sequential locality; data access patterns are more random</p>
+            </div>
+            <div class="info-card">
+              <h4>Optimized Sizing</h4>
+              <p>Each TLB can be sized and organized for its specific workload characteristics</p>
+            </div>
+          </div>
+          
+          <div class="diagram">┌────────────────────────────────────────────────────────────────────┐
+│                        CPU Pipeline                                │
+├────────────────────────────────────────────────────────────────────┤
+│                                                                    │
+│   ┌─────────────┐                      ┌─────────────┐             │
+│   │   Fetch     │                      │   Execute   │             │
+│   │   Unit      │                      │   Unit      │             │
+│   └──────┬──────┘                      └──────┬──────┘             │
+│          │                                    │                    │
+│          ▼                                    ▼                    │
+│   ┌─────────────┐                      ┌─────────────┐             │
+│   │   I-TLB     │                      │   D-TLB     │             │
+│   │ Instruction │                      │    Data     │             │
+│   │ Translations│                      │ Translations│             │
+│   └──────┬──────┘                      └──────┬──────┘             │
+│          │                                    │                    │
+│          ▼                                    ▼                    │
+│   ┌─────────────┐                      ┌─────────────┐             │
+│   │  I-Cache    │                      │  D-Cache    │             │
+│   └─────────────┘                      └─────────────┘             │
+│                                                                    │
+└────────────────────────────────────────────────────────────────────┘</div>
+          
+          <h2 class="section-header">Access Pattern Differences</h2>
+          
+          <p>Instructions and data exhibit fundamentally different locality characteristics. Understanding these differences explains why the split architecture is so effective. Instructions flow sequentially through memory, creating excellent spatial locality. Data access, in contrast, can jump unpredictably across the address space.</p>
+          
+          <div class="table-container">
+            <table>
+              <tr>
+                <th>Characteristic</th>
+                <th>Instructions (I-TLB)</th>
+                <th>Data (D-TLB)</th>
+              </tr>
+              <tr>
+                <td>Access Pattern</td>
+                <td>Highly sequential</td>
+                <td>Often random</td>
+              </tr>
+              <tr>
+                <td>Locality</td>
+                <td>Excellent spatial locality</td>
+                <td>Variable</td>
+              </tr>
+              <tr>
+                <td>Typical Working Set</td>
+                <td>Smaller, stable</td>
+                <td>Larger, dynamic</td>
+              </tr>
+              <tr>
+                <td>Write Operations</td>
+                <td>Rare (self-modifying code)</td>
+                <td>Frequent</td>
+              </tr>
+              <tr>
+                <td>Typical Size</td>
+                <td>64-128 entries</td>
+                <td>256-512+ entries</td>
+              </tr>
+            </table>
+          </div>
+          
+          <h2 class="section-header">TLB Entry Structure</h2>
+          
+          <p>Each TLB entry caches the result of a page table walk, storing not just the translation but also the permission bits that govern access. The I-TLB enforces execute permissions—a critical security mechanism for preventing code injection attacks through the W^X policy. The D-TLB must handle both read and write permissions and track dirty bits for modified pages.</p>
+          
+          <div class="diagram">┌─────────────────────────────────────────────────────────────────┐
+│                      TLB Entry Structure                        │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│  ┌───────────────┬────────────────┬──────────────────────────┐  │
+│  │  Virtual Page │  Physical Page │      Attributes          │  │
+│  │    Number     │     Number     │                          │  │
+│  │   (VPN/Tag)   │     (PPN)      │  R | W | X | U | G | A   │  │
+│  └───────────────┴────────────────┴──────────────────────────┘  │
+│                                                                 │
+│  R = Readable    W = Writable    X = Executable                 │
+│  U = User Mode   G = Global      A = Accessed                   │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘</div>
+          
+          <h2 class="section-header">The TLB Hierarchy</h2>
+          
+          <p>Modern processors implement a TLB hierarchy similar to data caches. The L1 TLBs are split (I-TLB and D-TLB), optimized for speed with smaller capacity. The L2 TLB is typically unified and larger, catching misses from both L1 TLBs before triggering the expensive page table walk.</p>
+          
+          <div class="diagram">┌─────────────────────────────────────────────────────────────────┐
+│                      TLB Hierarchy                              │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│   Level 1 (Per-Core, Split)                                     │
+│   ┌─────────────────────┬─────────────────────┐                 │
+│   │      L1 I-TLB       │      L1 D-TLB       │                 │
+│   │   64-128 entries    │   64-128 entries    │                 │
+│   │   ~1 cycle access   │   ~1 cycle access   │                 │
+│   └──────────┬──────────┴──────────┬──────────┘                 │
+│              └──────────┬──────────┘                            │
+│                         ▼                                       │
+│   Level 2 (Per-Core, Unified)                                   │
+│   ┌─────────────────────────────────────────────┐               │
+│   │              L2 Unified TLB                 │               │
+│   │           512-2048 entries                  │               │
+│   │           ~6-8 cycle access                 │               │
+│   └─────────────────────┬───────────────────────┘               │
+│                         ▼                                       │
+│              ┌─────────────────────┐                            │
+│              │   Page Table Walk   │                            │
+│              │   10-100+ cycles    │                            │
+│              └─────────────────────┘                            │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘</div>
+          
+          <div class="pull-quote">
+            <p>"The TLB sits at the critical intersection of the virtual memory abstraction and raw hardware performance—invisible when working well, but devastating when thrashing."</p>
+          </div>
+          
+          <h2 class="section-header">Real-World Specifications</h2>
+          
+          <p>Examining actual processor implementations reveals how these principles manifest in silicon. Both Intel and AMD have converged on similar designs, though with different specific choices reflecting their microarchitectural philosophies.</p>
+          
+          <div class="table-container">
+            <table>
+              <tr>
+                <th>Processor</th>
+                <th>TLB Level</th>
+                <th>Type</th>
+                <th>Entries</th>
+                <th>Associativity</th>
+              </tr>
+              <tr>
+                <td>Intel Skylake</td>
+                <td>L1</td>
+                <td>I-TLB (4KB)</td>
+                <td>128</td>
+                <td>8-way</td>
+              </tr>
+              <tr>
+                <td>Intel Skylake</td>
+                <td>L1</td>
+                <td>D-TLB (4KB)</td>
+                <td>64</td>
+                <td>4-way</td>
+              </tr>
+              <tr>
+                <td>Intel Skylake</td>
+                <td>L2</td>
+                <td>Unified</td>
+                <td>1536</td>
+                <td>12-way</td>
+              </tr>
+              <tr>
+                <td>AMD Zen 3</td>
+                <td>L1</td>
+                <td>I-TLB (4KB)</td>
+                <td>64</td>
+                <td>Full</td>
+              </tr>
+              <tr>
+                <td>AMD Zen 3</td>
+                <td>L1</td>
+                <td>D-TLB (4KB)</td>
+                <td>64</td>
+                <td>Full</td>
+              </tr>
+              <tr>
+                <td>AMD Zen 3</td>
+                <td>L2</td>
+                <td>Unified</td>
+                <td>2048</td>
+                <td>8-way</td>
+              </tr>
+            </table>
+          </div>
+          
+          <h2 class="section-header">TLB Management & ASIDs</h2>
+          
+          <p>TLB entries must be invalidated when page tables change—on context switches, memory unmapping, or protection changes. The traditional approach of flushing the entire TLB on every context switch proved costly. Modern processors use Address Space Identifiers (ASIDs) to tag entries, allowing multiple processes' translations to coexist peacefully.</p>
+          
+          <div class="diagram">┌─────────────────────────────────────────────────────────────────┐
+│                    TLB Entry with ASID                          │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│  ┌────────┬───────────────┬────────────────┬──────────────┐     │
+│  │  ASID  │  Virtual Page │  Physical Page │  Attributes  │     │
+│  │ (8-16  │    Number     │     Number     │              │     │
+│  │  bits) │               │                │              │     │
+│  └────────┴───────────────┴────────────────┴──────────────┘     │
+│                                                                 │
+│  Process A (ASID=1): Entry remains valid after context switch   │
+│  Process B (ASID=2): Can coexist in the same TLB                │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘</div>
+          
+          <h2 class="section-header">Security Implications</h2>
+          
+          <p>The split TLB architecture gained new significance with the discovery of Spectre and Meltdown vulnerabilities. Kernel Page Table Isolation (KPTI) now separates user and kernel translations, requiring TLB flushes on every system call—a significant performance cost that underscores how deeply the TLB is woven into system security.</p>
+          
+          <h2 class="section-header">Performance Optimization</h2>
+          
+          <p>Understanding TLB architecture enables practical optimizations. Improving code locality keeps hot paths together, maximizing I-TLB hits. Using huge pages (2MB or 1GB) dramatically improves coverage: 256 TLB entries with 4KB pages cover just 1MB, but with 2MB pages cover 512MB. Reducing working set size and aligning data structures to avoid page boundary straddling further improves hit rates.</p>
+          
+          <div class="highlight-box">
+            <p><strong>The Huge Pages Advantage:</strong> Standard 4KB pages with 256 entries = 1MB coverage. With 2MB huge pages, the same 256 entries cover 512MB—a 512× improvement in TLB reach with zero additional hardware.</p>
+          </div>
+          
+          <h2 class="section-header">Summary</h2>
+          
+          <p>The split I-TLB and D-TLB architecture exemplifies a fundamental principle: specialization enables optimization. By recognizing that instruction fetches and data accesses have different characteristics and occur in parallel, processor designers created a system that eliminates contention, allows optimal sizing for each workload, and enables the parallel lookups that keep modern superscalar processors fed with translated addresses.</p>
+          
+          <p>For systems programmers, kernel developers, and anyone optimizing memory-intensive applications, understanding this architecture is essential. The TLB is the silent guardian of memory performance—invisible when functioning well, but capable of devastating performance when overwhelmed.</p>
+        </div>
+      </article>
+    </main>
+    
+    <footer class="footer">
+      <nav class="footer-nav">
+        <a href="#">Previous: Paging Fundamentals</a>
+        <a href="#">Next: Page Table Walkers</a>
+        <a href="#">Subscribe</a>
+        <a href="#">Archives</a>
+      </nav>
+      <p class="copyright">© 2025 The Weekly Chronicle • Systems Architecture Desk • All Rights Reserved</p>
+    </footer>
+  </div>
+</body>
+</html>
